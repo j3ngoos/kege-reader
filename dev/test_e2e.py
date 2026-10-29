@@ -191,6 +191,16 @@ bands_l = json.loads(wd.js(bands))
 step("long_bottom_visible", bands_l[1] > 800, bands_l)
 wd.screenshot("/tmp/kp_long.png")
 
+# 12) xlong task: >30000px, scroll all the way to the very end
+rend = open_pip_btn(4)  # №31999
+Hx = int(rend.split("x")[1]) if rend and "x" in rend else -1
+step("xlong_over_old_cap", Hx > 30000, f"H={Hx} (old design would fail)")
+wd.js("for(let i=0;i<130;i++) window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',altKey:true,bubbles:true}))")
+time.sleep(1.5)
+bands_x = json.loads(wd.js(bands))
+step("xlong_end_visible", bands_x[1] > 800, bands_x)
+wd.screenshot("/tmp/kp_xlong.png")
+
 print("\nRESULT:", json.dumps(r, ensure_ascii=False, indent=1))
 ok = all(s["ok"] for s in r["steps"])
 print("ALL_OK" if ok else "SOME_FAILED")

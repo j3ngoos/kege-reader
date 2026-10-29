@@ -60,8 +60,8 @@
     bar.addEventListener('click', (e) => {
       const a = e.target?.dataset?.a;
       if (!a) return;
-      if (a === 'minus') { state.zoom -= 0.1; applyZoom(); }
-      else if (a === 'plus') { state.zoom += 0.1; applyZoom(); }
+      if (a === 'minus') { state.zoom -= 0.1; applyZoom(); if (state.pipTask) renderFrame(); }
+      else if (a === 'plus') { state.zoom += 0.1; applyZoom(); if (state.pipTask) renderFrame(); }
       else if (a === 'read') { state.read = !state.read; applyRead(); }
       else if (a === 'pip') { openPipCurrent(); }
       else if (a === 'close') { bar.remove(); }
@@ -166,26 +166,36 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, CH);
     drawHeader(ctx, st.taskId, note);
-    if (st.rendered) {
-      const scale = CW / st.rendered.width;
-      const h = st.rendered.height * scale;
+    if (st.band) {
       ctx.save();
       ctx.beginPath(); ctx.rect(0, HEAD, CW, CH - HEAD); ctx.clip();
-      ctx.drawImage(st.rendered, 0, HEAD - st.scrollTop, CW, h);
+      ctx.drawImage(st.band, 0, HEAD);
       ctx.restore();
     }
   }
 
   function html2canvasReady() {
     // kp-render.js ships as the first content-script file: same world, no CSP games
-    return Promise.resolve(window.KP && window.KP.render ? window.KP.render : null)
+    return Promise.resolve(window.KP && window.KP.band ? window.KP : null)
       .then((r) => r || Promise.reject(new Error('KP renderer missing')));
+  }
+
+  function redrawBand() {
+    const st = state.pip;
+    if (!st.el || !window.KP) { drawCanvas(); return; }
+    try {
+      const b = window.KP.band(st.el, CW, st.scrollTop, CH - HEAD + 40);
+      if (b) st.band = b.canvas;
+    } catch (e) {
+      document.documentElement.dataset.kpRenderErr = String(e && e.message || e).slice(0, 200);
+    }
+    drawCanvas();
   }
 
   async function renderFrame() {
     const st = state.pip;
     if (!st || st.rendering) return;
-    let el = null, win = window;
+    let el = null;
     const row = findRow(st.taskId);
     if (row) {
       el = row.querySelector('td:nth-child(2)') || row;
@@ -194,29 +204,27 @@
       try { doc = st.iframe.contentDocument; } catch { doc = null; }
       el = doc?.querySelector('.taskList');
       if (el && !st.iframe.contentWindow.__kpReady) return;
-      win = el && el.ownerDocument.defaultView;
     }
     if (!el) return;
     st.rendering = true;
     drawCanvas('рисуем…');
     try {
-      const h2c = await html2canvasReady();
-      const rc = await h2c(el, {
-        scale: 1.1,
-        backgroundColor: '#ffffff',
-        logging: false,
-        window: win,
-      });
-      st.rendered = rc;
-      document.documentElement.dataset.kpRendered = rc.width + 'x' + rc.height;
-      const maxScroll = Math.max(0, rc.height * (CW / rc.width) - (CH - HEAD));
-      st.maxScroll = maxScroll;
-      st.scrollTop = Math.min(st.scrollTop, maxScroll);
+      const kp = await html2canvasReady();
+      await kp.preload(el);
+      st.el = el;
+      st.totalH = kp.measure(el, CW);
+      st.maxScroll = Math.max(0, st.totalH - (CH - HEAD));
+      st.scrollTop = Math.min(st.scrollTop, st.maxScroll);
+      const b = kp.band(el, CW, st.scrollTop, CH - HEAD + 40);
+      if (!b) throw new Error('canvas band alloc fail');
+      st.band = b.canvas;
+      document.documentElement.dataset.kpRendered = CW + 'x' + b.total;
       drawCanvas();
     } catch (e) {
       window.__kpErrStack = String(e && e.stack || e).split('\n').slice(0, 8).join(' | ');
-      document.documentElement.dataset.kpRenderErr = String(e && e.message || e).slice(0, 200);
-      drawCanvas('ошибка рендера');
+      const msg = String(e && e.message || e).slice(0, 200);
+      document.documentElement.dataset.kpRenderErr = msg;
+      drawCanvas('ошибка: ' + msg.slice(0, 40));
     } finally {
       st.rendering = false;
     }
@@ -237,7 +245,8 @@
     const st = state.pip;
     st.taskId = taskId;
     st.scrollTop = 0;
-    st.rendered = null;
+    st.band = null;
+    st.el = null;
     st.maxScroll = 0;
     if (!findRow(taskId)) ensureFrame(taskId);
     markActive(taskId);
@@ -266,7 +275,7 @@
     while (Date.now() - t0 < 25000) {
       await renderFrame();
       const sig = sigOf(st.taskId);
-      if (st.rendered && sig && sig === lastSig) break;
+      if (st.band && sig && sig === lastSig) break;
       lastSig = sig;
       await new Promise(r => setTimeout(r, 700));
     }
@@ -313,7 +322,7 @@
       e.preventDefault();
       const st = state.pip;
       st.scrollTop = Math.max(0, Math.min(st.maxScroll || 99999, st.scrollTop + map[e.key]));
-      drawCanvas();
+      redrawBand();
     } else if (e.key === 'ArrowRight') { e.preventDefault(); switchPip(1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); switchPip(-1); }
   }, true);

@@ -69,6 +69,16 @@
           <span class="link">Показать ответ</span>
         </td>
       </tr>
+      <tr>
+        <td class="center"><div class="number">19</div></td>
+        <td style="padding-bottom:20px">
+          <p><span class="details">№ 31999 </span><span>(Уровень: высокий)</span></p>
+          <div class="task-text" style="text-align:justify;padding-right:20px" id="xlongCell">
+            <p>Экстремально длинная задача: 170 абзацев, суммарная высота &gt; 30000px (за старым canvas-капом), прокрутка полосами.</p>
+          </div>
+          <span class="link">Показать ответ</span>
+        </td>
+      </tr>
     </tbody>
   </table>
 </div>
@@ -78,6 +88,12 @@
     const p = document.createElement('p');
     p.textContent = 'Абзац ' + i + ': ' + 'длинный текст задания для проверки высоты кадра коммивояжер алгоритм евклида '.repeat(4);
     td.appendChild(p);
+  }
+  const tdb = document.getElementById('xlongCell');
+  for (let i = 0; i < 170; i++) {
+    const p = document.createElement('p');
+    p.textContent = 'Огромный абзац ' + i + ': ' + 'полосной рендер должен это прокрутить без единого большого канваса table true false null '.repeat(4);
+    tdb.appendChild(p);
   }
 </script>
 </body>

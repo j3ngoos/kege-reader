@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="Эмулятор станции КЕГЭ, который позволяет проводить тренировку экзамена по Информатике и ИКТ в компьютерной форме">
+
+    <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/style.css">
+    <title>КЕГЭ</title>
+
+    <!--TinyMCE-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.2/tinymce.min.js" integrity="sha512-sWydClczl0KPyMWlARx1JaxJo2upoMYb9oh5IHwudGfICJ/8qaCyqhNTP5aa9Xx0aCRBwh71eZchgz0a4unoyQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.2/icons/default/icons.min.js" integrity="sha512-iZEjj5ZEdiNAMLCFKlXVZkE0rKZ9xRGFtr0aMi8gxbEl1RbMCbpPomRiKurc93QVFdaxcnduQq6562xxqbC6wQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.2/models/dom/model.min.js" integrity="sha512-X70FNQjHziJYp1qyTdwoz90cjn4RpwEMDBAXy/N9b2YSokkBRZR2dX/M+OHUOiUbP6Y9hbl0ti/t/xYFLDbM1Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.2/plugins/image/plugin.min.js" integrity="sha512-VmU0w+h9zB5vbMqWtqUAOYiadmq08T1zSlAFLCpVUqcWET39qrE8B5Uik4+SRkmrnO5sNQtjFomQf/ZMgrlFag==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.2/plugins/link/plugin.min.js" integrity="sha512-v7nKbJ5y8GU+ncfjNutu3oQXaGEyWGxuFmW3URt16nQ/0G6FrjsFaSP5surXil4+we3I8kfwHuclSLr/dgs+oA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.2/plugins/table/plugin.min.js" integrity="sha512-gaoDiNAC3AeDIwDSD3wbOpA6uak2rmgAY4FA1ewLPHb3IYO+gVtmhO8z99xqgJ6nvGDRYWWQ6owjXuZVu+h5EQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.2/plugins/autoresize/plugin.min.js" integrity="sha512-0jdSbOC6xRt5GYK83etnNMzqD6u+tBTqVy01jSD4TnUNm/RNkawCpxmu+D1Tr3Jp+zaWfIHezKS2GKatypH18A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>-->
+    <script src="/eqneditor.js"></script>
+
+    <!--KaTeX-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" integrity="sha384-3UiQGuEI4TTMaFmGIZumfRPtfKQ3trwQE2JgosJxCnGmQpL/lJdjpcHkaaFwHlcI" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js" integrity="sha384-G0zcxDFp5LWZtDuRMnBkk3EphCK1lhEf4UEyEM693ka574TZGwo4IWwS6QLzM/2t" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+    <script type="module" crossorigin src="/assets/index-PcHXRF7v.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/_plugin-vue_export-helper-BSDLVsaT.js">
+    <link rel="modulepreload" crossorigin href="/assets/Header-BmMIvipz.js">
+    <link rel="modulepreload" crossorigin href="/assets/devtools-Bpr7ZAVB-D8prZtEI.js">
+    <link rel="modulepreload" crossorigin href="/assets/constants-DMLeM3ET.js">
+    <link rel="stylesheet" crossorigin href="/assets/Header-CgVjRIO3.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-C2UoqKue.css">
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but KEGE doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(67213024, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, trackHash:true }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/67213024" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->
+    
+    <!--ретаргетинг VK-->
+    <script type="text/javascript">!function(){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src='https://vk.com/js/api/openapi.js?173',t.onload=function(){VK.Retargeting.Init("VK-RTRG-1965936-3KB42"),VK.Retargeting.Hit()},document.head.appendChild(t)}();</script><noscript><img src="https://vk.com/rtrg?p=VK-RTRG-1965936-3KB42" style="position:fixed; left:-999px;" alt=""/></noscript>
+
+    <!-- Top.Mail.Ru counter -->
+    <script type="text/javascript">var _tmr = window._tmr || (window._tmr = []);_tmr.push({id: "3689212", type: "pageView", start: (new Date()).getTime()});(function (d, w, id) {if (d.getElementById(id)) return;var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;ts.src = "https://top-fwz1.mail.ru/js/code.js";var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }})(document, window, "tmr-code");</script><noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3689212;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
