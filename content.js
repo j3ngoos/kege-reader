@@ -163,7 +163,7 @@
     return fr;
   }
 
-  function drawHeader(ctx, taskId, note, info) {
+  function drawHeader(ctx, taskId, note, info, diag) {
     ctx.fillStyle = '#1e325a';
     ctx.fillRect(0, 0, CW, HEAD);
     ctx.fillStyle = '#fff';
@@ -177,10 +177,10 @@
       ctx.font = '13px Roboto, sans-serif';
       ctx.fillText(info, 620, 66);
     }
-    if (note) {
-      ctx.fillStyle = '#ffb400';
-      ctx.font = '700 20px Roboto, sans-serif';
-      ctx.fillText(note, 560, 44);
+    if (diag) {
+      ctx.fillStyle = '#8fb0dd';
+      ctx.font = '11px Roboto, sans-serif';
+      ctx.fillText(String(diag).slice(0, 46), 620, 82);
     }
   }
 
@@ -191,12 +191,17 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, CH);
     drawHeader(ctx, st.taskId, note,
-      'v3.2 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'));
+      'v3.3 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      st.diag);
     if (st.band) {
       ctx.save();
       ctx.beginPath(); ctx.rect(0, HEAD, CW, CH - HEAD); ctx.clip();
       ctx.drawImage(st.band, 0, HEAD);
       ctx.restore();
+    }
+    if (note) {
+      ctx.fillStyle = '#b3400a'; ctx.font = 'bold 15px Roboto, sans-serif';
+      ctx.fillText(note, 20, HEAD + 26, CW - 40);
     }
   }
 
@@ -235,6 +240,13 @@
     st.rendering = true;
     drawCanvas('рисуем…');
     try {
+      try {
+        const r = el.getBoundingClientRect();
+        const d = csOf(el);
+        st.diag = (row ? 'row' : 'iframe') + ' ' + el.tagName +
+          ' h=' + Math.round(r.height) + ' w=' + Math.round(r.width) +
+          ' d=' + d.display + ' k=' + el.children.length + ' ox=' + Math.round(r.x);
+      } catch (e) { st.diag = 'diagfail:' + String(e.message || e).slice(0, 40); }
       const kp = await html2canvasReady();
       await kp.preload(el);
       st.el = el;
@@ -247,10 +259,13 @@
       document.documentElement.dataset.kpRendered = CW + 'x' + b.total;
       drawCanvas();
     } catch (e) {
+      const fr = String(e && e.stack || '')
+        .split('\n').filter((l) => l.includes('kp-render'))
+        .map((l) => (l.match(/kp-render\S*?:(\d+)/) || [])[1]).filter(Boolean).slice(0, 3);
       window.__kpErrStack = String(e && e.stack || e).split('\n').slice(0, 8).join(' | ');
       const msg = String(e && e.message || e).slice(0, 200);
       document.documentElement.dataset.kpRenderErr = msg;
-      drawCanvas('ошибка: ' + msg.slice(0, 40));
+      drawCanvas('ошибка: ' + msg.slice(0, 45) + (fr.length ? ' L' + fr.join(',') : ''));
     } finally {
       st.rendering = false;
     }

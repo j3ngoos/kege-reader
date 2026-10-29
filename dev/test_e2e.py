@@ -153,7 +153,21 @@ hdr = wd.js("""
 step("task_switch_header", json.loads(hdr)["lightPixels"] > 100, hdr)
 wd.screenshot("/tmp/kp_switch.png")
 
-# 9) zoom: press A+
+# 9) zoom: reset persisted state, reopen, press A+
+wd.js("localStorage.removeItem('kp_zoom'); localStorage.removeItem('kp_read')")
+wd.get(BASE + "/task/31112")
+time.sleep(1.5)
+p9 = json.loads(wd.js("""
+  const b=document.querySelector('.kp-pip-btn');
+  const r=b.getBoundingClientRect();
+  return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2});
+"""))
+wd.click_xy(p9["x"], p9["y"])
+for i in range(10):
+    time.sleep(1)
+    o9 = wd.js("return document.pictureInPictureElement ? 'VIDEO' : (document.documentElement.dataset.kpRenderErr||'')")
+    if o9 == "VIDEO":
+        break
 z0 = wd.js("return JSON.stringify({zoom: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kp-zoom'))})")
 wd.js("""
   const b=[...document.querySelectorAll('#kp-bar button')].find(b=>b.dataset.a==='plus');
