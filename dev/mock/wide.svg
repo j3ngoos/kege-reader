@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="160">
+<rect width="1200" height="160" fill="#e7edf9"/>
+<text x="20" y="80" font-family="sans-serif" font-size="40" fill="#1e325a">ШИРОКАЯ КАРТИНКА 1200px — должна вписаться в окно</text>
+</svg>

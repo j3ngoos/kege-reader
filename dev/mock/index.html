@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>КЕГЭ mock</title>
+<link rel="stylesheet" href="https://kompege.ru/style.css">
+<link rel="stylesheet" href="https://kompege.ru/assets/TaskPage-IDC6hFUW.css">
+</head>
+<body>
+<div class="taskList">
+  <div class="select-panel">
+    <div><p class="header">Поиск по номеру</p><p><input type="text" placeholder="Номер задачи" value="31112"><input type="button" value="Показать задачу"></p></div>
+    <div><p class="header">Поиск по типу</p><p><select><option value="13">13. Динамическое программирование</option></select><input type="button" value="Найти все задачи"></p>
+    <p><span> Сортировка: </span><select><option>Сначала новые</option></select><input type="checkbox"><span> С решением </span></p></div>
+  </div>
+  <table>
+    <tbody>
+      <tr style="height:30px"><td class="center"></td><td class="center"></td></tr>
+      <tr>
+        <td class="center"><div class="number">13</div></td>
+        <td style="padding-bottom:20px">
+          <p><span class="details">№ 31112 </span><span>(Уровень: высокий)</span></p>
+          <div class="task-text" style="text-align:justify;padding-right:20px">
+            <p>На языке программирования Пель написан скрипт, обрабатывающий целые неотрицательные числа. Число X, состоящее из 18 цифр, разбивают на две части любым допустимым способом, из полученных двух чисел выбирают наибольшее, и оно проходит по скрипту далее. Например, из числа 112233 можно получить пары (1,12233), (11,2233), (112,233), (1122,33), (11223,3). Для каждой пары вычисляют значение F по таблице (пустая клетка — бесконечность, строки F1 и F2 — функции для двух частей числа). Результат скрипта — сумма всех F по лучшему разбиению. Укажите минимальную сумму F, которую может выдать скрипт для числа X. Для разбиения (112,233) значения F: F1(112)=2, F2(233)=24, F=max=24.</p>
+            <table border="1" cellpadding="4">
+              <tr><th></th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th></tr>
+              <tr><td><b>F1</b></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>2</td><td></td><td></td><td></td><td></td><td>3</td><td></td></tr>
+              <tr><td><b>F2</b></td><td></td><td>3</td><td>4</td><td>24</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td></tr>
+            </table>
+            <p>Длинное предложение для проверки переноса текста без горизонтального скролла: длина строки должна следовать за шириной окна пользователя и не выходить за границы окна при любом размере монитора — проверка того, что текст следует за размером окна пользователя и не выходит за границы окна при любом размере монитора пользователя, использованного для проверки переноса.</p>
+            <table border="1" cellpadding="4" width="1400">
+              <tr><td width="80">F1</td><td width="80">1</td><td width="80">22</td><td width="80">333</td><td width="80">4444</td><td width="80">55555</td><td width="80">666</td><td width="80">77</td><td width="80">888</td><td width="80">9999</td><td width="80">10</td><td width="80">111</td><td width="80">1222</td><td width="80">13333</td><td width="80">144</td><td width="80">1555</td><td width="80">16666</td><td width="80">177</td><td width="80">1888</td></tr>
+            </table>
+            <pre>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA long line pre block AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</pre>
+            <div style="width:1300px;background:#eef;border:1px solid #99b">фикс. блок 1300px</div>
+            <img src="wide.svg" alt="wide image">
+          </div>
+          <span class="link">Показать ответ</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="center"><div class="number">13</div></td>
+        <td style="padding-bottom:20px">
+          <p><span class="details">№ 31113 </span><span>(Уровень: высокий)</span></p>
+          <div class="task-text" style="text-align:justify;padding-right:20px">
+            <p>Вторая задача для списка: короткий текст, чтобы проверить кнопки PiP у каждого номера и переключение Alt+стрелки.</p>
+          </div>
+          <span class="link">Показать ответ</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

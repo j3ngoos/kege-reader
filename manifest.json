@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "KEGE Reader — fluid text + PiP",
+  "short_name": "KegPipe",
+  "version": "0.1.0",
+  "description": "Компактные окна и читаемый текст на kompege.ru: таблицы по ширине окна, кнопки PiP у каждого номера задачи, вынос задачи в плавающее окно поверх всех окон, зум, автопрокрутка с клавиатуры.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "kege-reader@hermes.local",
+      "strict_min_version": "121.0"
+    }
+  },
+  "permissions": [
+    "https://kompege.ru/*",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://kompege.ru/*"],
+      "css": ["content.css"],
+      "js": ["lib/kp-render.js", "content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": ["lib/kp-render.js"]
+}

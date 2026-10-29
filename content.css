@@ -1,0 +1,174 @@
+/* KEGE Reader — читаемая раскладка kompege.ru (v0.1)
+   Все правила включаются классом html.kp-read (дефолт включён). */
+
+/* --- список задач /task и карточка задачи --- */
+html.kp-read .taskList > table {
+  table-layout: fixed !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+html.kp-read .taskList > table > tbody > tr > td:first-child {
+  width: 46px;
+}
+html.kp-read .taskList table {
+  max-width: 100%;
+}
+html.kp-read .taskList table table {
+  table-layout: auto;
+}
+html.kp-read .taskList td,
+html.kp-read .taskList th {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  max-width: 100%;
+}
+html.kp-read .taskList pre {
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+html.kp-read .taskList td[width],
+html.kp-read .taskList th[width] {
+  width: auto !important;
+  min-width: 0;
+}
+html.kp-read .taskList table[width] {
+  width: auto !important;
+}
+html.kp-read .taskList img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+/* KaTeX-формулы не даём вылезти за окно */
+html.kp-read .katex-display,
+html.kp-read .katex {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+html.kp-read .task-text {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+/* блоки с фиксированной шириной (width="1400", style="width:1300px") */
+html.kp-read .taskList [width],
+html.kp-read .taskList [style*="width"] {
+  max-width: 100% !important;
+}
+/* центральная колонка — не шире окна */
+html.kp-read .center {
+  min-width: 0;
+}
+
+/* --- экзаменационная сетка (доска номеров на старте экзамена).
+       Только на борту с ячейками .cell — главную не трогаем. --- */
+html.kp-examfix:has(.cell) .start-wrap[data-v-5f8f6389] {
+  grid-template-columns: minmax(4px, 1fr) 200px minmax(0, 1fr) minmax(4px, 1fr) !important;
+  grid-template-rows: 60px 60px 1fr min-content !important;
+}
+html.kp-examfix #app {
+  height: auto !important;
+  min-height: 100vh;
+}
+html.kp-examfix .main {
+  min-width: 0;
+  overflow-x: auto;
+}
+html.kp-examfix .header-wrap[data-v-e1be28a1] {
+  width: 100% !important;
+}
+
+/* --- зум текста задач: переменная --kp-zoom (1.0 .. 1.8) --- */
+html.kp-read .taskList {
+  font-size: calc(16px * var(--kp-zoom, 1));
+}
+html.kp-read .taskList .details {
+  font-size: calc(12px * var(--kp-zoom, 1));
+}
+
+/* --- кнопки PiP у номеров --- */
+.kp-pip-btn {
+  cursor: pointer;
+  user-select: none;
+  background: #00c3a2;
+  color: #004a46;
+  border: 0;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 6px;
+  margin-top: 6px;
+  display: block;
+  width: 40px;
+  line-height: 1.3;
+}
+.kp-pip-btn:hover { filter: brightness(1.1); }
+.kp-pip-btn.kp-active {
+  background: #ffb400;
+  color: #3a2a00;
+}
+
+/* --- панель инструментов --- */
+#kp-bar {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2147483647;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  background: rgba(30, 50, 90, 0.92);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+#kp-bar button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 5px;
+  background: #00c3a2;
+  color: #00352f;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+#kp-bar button:hover { filter: brightness(1.12); }
+#kp-bar .kp-hint {
+  color: #cfe3ff;
+  font-size: 11px;
+  max-width: 150px;
+  line-height: 1.25;
+}
+#kp-bar .kp-close {
+  background: transparent;
+  color: #9fb6d8;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+
+/* --- режим iframe (?kpip=1 — кадр для PiP) --- */
+html.kp-frame body { background: #fff; }
+html.kp-frame .select-panel,
+html.kp-frame .details,
+html.kp-frame .link,
+html.kp-frame .answerWrap,
+html.kp-frame .label,
+html.kp-frame .kp-pip-btn,
+html.kp-frame #kp-bar,
+html.kp-frame table > tbody > tr:first-child {
+  display: none !important;
+}
+html.kp-frame .taskList {
+  width: 860px;
+  margin: 0 auto;
+  padding: 0 14px 40px;
+}
+html.kp-frame .task-text {
+  text-align: left !important;
+  padding-right: 0 !important;
+}
+html.kp-frame .taskList td:first-child { display: none; }
+html.kp-frame .taskList td { padding-bottom: 6px !important; }
+html.kp-frame .center { text-align: left; }

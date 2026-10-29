@@ -1,0 +1,4 @@
+dist/
+dev/ffext/
+dev/ffext.xpi
+__pycache__/
