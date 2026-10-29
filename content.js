@@ -214,6 +214,7 @@
       st.scrollTop = Math.min(st.scrollTop, maxScroll);
       drawCanvas();
     } catch (e) {
+      window.__kpErrStack = String(e && e.stack || e).split('\n').slice(0, 8).join(' | ');
       document.documentElement.dataset.kpRenderErr = String(e && e.message || e).slice(0, 200);
       drawCanvas('ошибка рендера');
     } finally {

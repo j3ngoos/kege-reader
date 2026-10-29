@@ -156,6 +156,41 @@ z = wd.js("return JSON.stringify({zoom: parseFloat(getComputedStyle(document.doc
 dz = json.loads(z)["zoom"] - json.loads(z0)["zoom"]
 step("zoom_works", abs(dz - 0.1) < 0.02, f"{z0} -> {z}")
 
+# 10) inline flow: formula task -> compact canvas, top filled (no column-per-char, no miles of blank)
+def open_pip_btn(idx):
+    wd.js("document.documentElement.dataset.kpRendered=''; document.documentElement.dataset.kpRenderErr=''")
+    p = wd.js(f"""
+      const b=document.querySelectorAll('.kp-pip-btn')[{idx}];
+      b.scrollIntoView({{block:'center'}});
+      const r=b.getBoundingClientRect();
+      return JSON.stringify({{x:r.x+r.width/2,y:r.y+r.height/2}});
+    """)
+    P = json.loads(p)
+    wd.click_xy(P["x"], P["y"])
+    for _ in range(30):
+        d = wd.js("const de=document.documentElement; return de.dataset.kpRendered||de.dataset.kpRenderErr||null")
+        if d and d != "None":
+            return d
+        time.sleep(1)
+    return None
+
+rend = open_pip_btn(2)  # №31121 formula task
+Hf = int(rend.split("x")[1]) if rend and "x" in rend else -1
+step("formula_rendered", Hf > 0, rend)
+step("formula_compact_no_blank", 0 < Hf < 1400, f"H={Hf} (compact, no huge blank)")
+bands_f = json.loads(wd.js(bands))
+step("formula_lines_visible", bands_f[0] > 800, bands_f)
+
+# 11) long task: full tall canvas, BOTTOM filled (not cut, not blank)
+rend = open_pip_btn(3)  # №31024 long task
+Hl = int(rend.split("x")[1]) if rend and "x" in rend else -1
+step("long_rendered_tall", 2500 < Hl < 30000, f"H={Hl}")
+wd.js("for(let i=0;i<25;i++) window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',altKey:true,bubbles:true}))")
+time.sleep(1)
+bands_l = json.loads(wd.js(bands))
+step("long_bottom_visible", bands_l[1] > 800, bands_l)
+wd.screenshot("/tmp/kp_long.png")
+
 print("\nRESULT:", json.dumps(r, ensure_ascii=False, indent=1))
 ok = all(s["ok"] for s in r["steps"])
 print("ALL_OK" if ok else "SOME_FAILED")

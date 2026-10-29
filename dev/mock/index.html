@@ -48,8 +48,37 @@
           <span class="link">Показать ответ</span>
         </td>
       </tr>
+      <tr>
+        <td class="center"><div class="number">13</div></td>
+        <td style="padding-bottom:20px">
+          <p><span class="details">№ 31121 </span><span>(Уровень: базовый)</span></p>
+          <div class="task-text" style="text-align:justify;padding-right:20px">
+            <p>Найдите наибольшее количество нулей в пятеричной записи значения выражения <span class="katex"><span class="mord">5</span><span class="msupsub"><span class="vlist"><span class="mord mathnormal">150</span></span></span><span class="mbin">+</span><span class="mord">5</span><span class="msupsub"><span class="vlist"><span class="mord">100</span></span></span><span class="mbin">−</span><span class="mord mathnormal">x</span></span>, где <i>x</i> — натуральное число. В ответе запишите число в десятичной системе счисления.</p>
+            <p>Проверка строк: обычный текст <b>жирный</b> <span style="color:#a33">красный</span> <span style="font-size:28px">БОЛЬШОЙ</span> конец строки, все должно течь строчками по ширине кадра, а не столбиками по символам.</p>
+          </div>
+          <span class="link">Показать ответ</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="center"><div class="number">14</div></td>
+        <td style="padding-bottom:20px">
+          <p><span class="details">№ 31024 </span><span>(Уровень: высокий)</span></p>
+          <div class="task-text" style="text-align:justify;padding-right:20px" id="longCell">
+            <p>Очень длинная задача: ниже 40 абзацев, кадр обязан отрисовать их все, низ не должен обрезаться и не должен быть пустым.</p>
+          </div>
+          <span class="link">Показать ответ</span>
+        </td>
+      </tr>
     </tbody>
   </table>
 </div>
+<script>
+  const td = document.getElementById('longCell');
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('p');
+    p.textContent = 'Абзац ' + i + ': ' + 'длинный текст задания для проверки высоты кадра коммивояжер алгоритм евклида '.repeat(4);
+    td.appendChild(p);
+  }
+</script>
 </body>
 </html>
