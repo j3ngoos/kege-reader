@@ -121,6 +121,15 @@ cc = json.loads(c)
 print("canvas:", cc)
 step("canvas_has_content", cc.get("nonwhiteSamples", 0) > 50, cc)
 
+# 6b) cross-origin image must NOT kill the captureStream (canvas taint guard)
+time.sleep(3)
+alive = wd.js("""
+  const v = document.querySelector('video');
+  return JSON.stringify({t: v.currentTime, rs: v.readyState, pip: !!document.pictureInPictureElement});
+""")
+a = json.loads(alive)
+step("pip_stream_alive_after_img", a["t"] > 0.3 and a["rs"] >= 2, alive)
+
 wd.screenshot("/tmp/kp_pip.png")
 
 # 7) keyboard scroll changes frame

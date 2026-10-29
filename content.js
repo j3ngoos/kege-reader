@@ -191,7 +191,7 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, CH);
     drawHeader(ctx, st.taskId, note,
-      'v3.1 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'));
+      'v3.2 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'));
     if (st.band) {
       ctx.save();
       ctx.beginPath(); ctx.rect(0, HEAD, CW, CH - HEAD); ctx.clip();
