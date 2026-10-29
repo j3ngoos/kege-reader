@@ -17,10 +17,18 @@
     document.documentElement.classList.add('kp-frame');
     const notifyReady = () => {
       const el = document.querySelector('.taskList');
-      if (el) window.__kpReady = true;
-      else setTimeout(notifyReady, 300);
+      const m = location.pathname.match(/\/task\/(\d+)/);
+      try {
+        document.title = 'KPR:' + (m ? m[1] : '?');
+        window.parent.postMessage({ kp: 'ready', task: m ? m[1] : '' }, location.origin);
+      } catch (e) { document.title = 'KPF:' + e.message; }
+      if (!el) setTimeout(notifyReady, 300);
     };
     notifyReady();
+    const mo = new MutationObserver(() => {
+      if (document.querySelector('.taskList')) { notifyReady(); mo.disconnect(); }
+    });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
     return;
   }
 
@@ -29,10 +37,19 @@
   const state = {
     zoom: parseFloat(localStorage.kp_zoom || '1') || 1,
     read: localStorage.kp_read !== '0',
-    pip: { taskId: null, iframe: null, scrollTop: 0, maxScroll: 0, rendered: null },
+    pip: { taskId: null, iframe: null, scrollTop: 0, maxScroll: 0, band: null,
+           el: null, totalH: 0, iframeReady: false },
     pipTask: null,
     stream: null,
   };
+  window.addEventListener('message', (e) => {
+    document.documentElement.dataset.kpMsg =
+      (document.documentElement.dataset.kpMsg || '') + '|' + e.origin + ':' + JSON.stringify(e.data).slice(0, 40);
+    // the iframe frame is same-origin; sandbox proxies defeat e.source ===
+    // iframe.contentWindow identity, so rely on origin + payload marker
+    if (e.origin === location.origin && e.data?.kp === 'ready' && state.pip?.iframe)
+      state.pip.iframeReady = true;
+  }, true);
   const applyZoom = () => {
     state.zoom = Math.min(2.2, Math.max(0.6, state.zoom));
     localStorage.kp_zoom = String(state.zoom);
@@ -64,7 +81,10 @@
       else if (a === 'plus') { state.zoom += 0.1; applyZoom(); if (state.pipTask) renderFrame(); }
       else if (a === 'read') { state.read = !state.read; applyRead(); }
       else if (a === 'pip') { openPipCurrent(); }
-      else if (a === 'close') { bar.remove(); }
+      else if (a === 'close') { bar.remove(); hideFallbackPanel(); }
+    });
+    bar.addEventListener('dblclick', (e) => {
+      if (e.target?.dataset?.a === 'minus') { state.zoom = 1; applyZoom(); if (state.pipTask) renderFrame(); }
     });
   }
 
@@ -131,7 +151,7 @@
     const cur = state.pip?.iframe;
     const url = `${location.origin}/task/${taskId}?kpip=1`;
     if (cur) {
-      cur.contentWindow.__kpReady = false;
+      state.pip.iframeReady = false;
       cur.src = url;
       return cur;
     }
@@ -143,7 +163,7 @@
     return fr;
   }
 
-  function drawHeader(ctx, taskId, note) {
+  function drawHeader(ctx, taskId, note, info) {
     ctx.fillStyle = '#1e325a';
     ctx.fillRect(0, 0, CW, HEAD);
     ctx.fillStyle = '#fff';
@@ -152,6 +172,11 @@
     ctx.font = '16px Roboto, sans-serif';
     ctx.fillStyle = '#cfe3ff';
     ctx.fillText('КЕГЭ · Alt+↑/↓ — прокрутка · Alt+←/→ — другой №', 18, 66);
+    if (info) {
+      ctx.fillStyle = '#9fb8e8';
+      ctx.font = '13px Roboto, sans-serif';
+      ctx.fillText(info, 620, 66);
+    }
     if (note) {
       ctx.fillStyle = '#ffb400';
       ctx.font = '700 20px Roboto, sans-serif';
@@ -165,7 +190,8 @@
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, CH);
-    drawHeader(ctx, st.taskId, note);
+    drawHeader(ctx, st.taskId, note,
+      'v3.1 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'));
     if (st.band) {
       ctx.save();
       ctx.beginPath(); ctx.rect(0, HEAD, CW, CH - HEAD); ctx.clip();
@@ -203,7 +229,7 @@
       let doc;
       try { doc = st.iframe.contentDocument; } catch { doc = null; }
       el = doc?.querySelector('.taskList');
-      if (el && !st.iframe.contentWindow.__kpReady) return;
+      if (el && !st.iframeReady) return;
     }
     if (!el) return;
     st.rendering = true;
@@ -241,6 +267,34 @@
     return t == null ? '' : String(t.length);
   }
 
+  function showFallbackPanel(msg) {
+    if (!video) return;
+    video.play().catch(() => {});
+    video.style.cssText = 'position:fixed;right:12px;bottom:56px;width:420px;' +
+      'max-height:80vh;z-index:2147483646;background:#000;box-shadow:0 4px 24px rgba(0,0,0,.5);' +
+      'border:2px solid #ffb400;border-radius:6px;';
+    video.dataset.kpPanel = '1';
+    let n = document.getElementById('kp-pipnote');
+    if (!n) {
+      n = document.createElement('div');
+      n.id = 'kp-pipnote';
+      n.style.cssText = 'position:fixed;right:12px;bottom:44px;z-index:2147483646;' +
+        'background:#8a5a00;color:#fff;font:12px Roboto,sans-serif;padding:3px 8px;' +
+        'border-radius:6px;max-width:430px;';
+      document.body.appendChild(n);
+    }
+    n.textContent = 'PiP-окно отбито браузером (' + String(msg).slice(0, 60) +
+      ') — кадр показан здесь; ▶ PiP повторить, ✕ скрыть';
+  }
+  function hideFallbackPanel() {
+    const n = document.getElementById('kp-pipnote');
+    if (n) n.remove();
+    if (video && video.dataset.kpPanel === '1') {
+      video.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px';
+      delete video.dataset.kpPanel;
+    }
+  }
+
   async function openPip(taskId) {
     const st = state.pip;
     st.taskId = taskId;
@@ -262,7 +316,8 @@
       } catch (e) {
         document.documentElement.dataset.kpPipError = (e && e.message) || String(e);
         console.warn('KPip: PiP request failed', e);
-        return;
+        showFallbackPanel((e && e.message) || String(e));
+        // не выходим: кадр дорисуется, пользователь увидит задачу в странице
       }
       pipWin.addEventListener('leavepictureinpicture', () => {
         state.pipTask = null;

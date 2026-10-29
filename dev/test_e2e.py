@@ -201,6 +201,26 @@ bands_x = json.loads(wd.js(bands))
 step("xlong_end_visible", bands_x[1] > 800, bands_x)
 wd.screenshot("/tmp/kp_xlong.png")
 
+# 13) iframe path: task not listed on the page -> iframe frame + cross-doc getComputedStyle
+wd.get(f"{BASE}/task/99999")
+time.sleep(2)
+wd.js("document.documentElement.dataset.kpRendered=''; document.documentElement.dataset.kpRenderErr=''")
+p = wd.js("""
+  const b=[...document.querySelectorAll('#kp-bar button')].find(b=>b.dataset.a==='pip');
+  const r=b.getBoundingClientRect();
+  return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2});
+""")
+P = json.loads(p)
+wd.click_xy(P["x"], P["y"])
+rend = None
+for _ in range(35):
+    d = wd.js("const de=document.documentElement; return de.dataset.kpRendered||de.dataset.kpRenderErr||null")
+    if d and d != "None":
+        rend = d
+        break
+    time.sleep(1)
+step("iframe_path_render_ok", rend and "x" in rend, rend)
+
 print("\nRESULT:", json.dumps(r, ensure_ascii=False, indent=1))
 ok = all(s["ok"] for s in r["steps"])
 print("ALL_OK" if ok else "SOME_FAILED")
