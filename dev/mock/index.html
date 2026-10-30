@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <title>КЕГЭ mock</title>
-<link rel="stylesheet" href="https://kompege.ru/style.css">
-<link rel="stylesheet" href="https://kompege.ru/assets/TaskPage-IDC6hFUW.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/vendor/katex.min.css">
+<script defer src="/vendor/katex.min.js"></script>
+
 </head>
 <body>
 <div class="taskList">
@@ -220,12 +221,16 @@ print(sum(1 for n in range(1, 101) if f(n) <= 10))</pre>
   }
 </script>
 <script defer>
-window.addEventListener('load', () => {
-  if (!window.katex) return;
+function kprender() {
+  if (!window.katex) { setTimeout(kprender, 50); return; }
   for (const n of document.querySelectorAll('[data-kx]')) {
+    if (n.dataset.kpDone) continue;
+    n.dataset.kpDone = '1';
     try { katex.render(n.dataset.kx, n, { displayMode: n.dataset.display === '1', throwOnError: false }); } catch (e) {}
   }
-});
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kprender);
+else kprender();
 </script>
 </body>
 </html>

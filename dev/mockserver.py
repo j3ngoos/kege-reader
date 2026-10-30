@@ -11,7 +11,13 @@ class H(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split("?")[0]
         if path.startswith("/task/") or path in ("/", "/index.html"):
-            self.path = "/index.html"
+            # relative asset refs from /task/<id> pages (e.g. src="wide.svg")
+            # resolve to /task/wide.svg -> serve the basename from mock root
+            base = os.path.basename(path)
+            if base and "." in base and os.path.exists(os.path.join(ROOT, base)):
+                self.path = "/" + base
+            else:
+                self.path = "/index.html"
         return super().do_GET()
     def end_headers(self):
         self.send_header("Cache-Control", "no-store")

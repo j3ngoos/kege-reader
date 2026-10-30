@@ -198,7 +198,7 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, canvas.height);
     drawHeader(ctx, st.taskId, note,
-      'v3.4 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      'v3.5 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
       st.diag);
     if (st.band) {
       ctx.save();
@@ -246,6 +246,8 @@
     if (!el) return;
     st.rendering = true;
     drawCanvas('рисуем…');
+      const STG = (typeof localStorage !== 'undefined' && localStorage.getItem('kp_stage')) || 'z';
+      if (STG === 'a') { st.rendering = false; return; }
     try {
       try {
         const r = el.getBoundingClientRect();
@@ -255,14 +257,17 @@
           ' d=' + d.display + ' k=' + el.children.length + ' ox=' + Math.round(r.x);
       } catch (e) { st.diag = 'diagfail:' + String(e.message || e).slice(0, 40); }
       const kp = await html2canvasReady();
+      if (STG === 'b') { st.rendering = false; document.documentElement.dataset.kpStageOk = 'b'; return; }
       await kp.preload(el);
       st.el = el;
       st.totalH = kp.measure(el, CW);
+      if (STG === 'c') { st.rendering = false; document.documentElement.dataset.kpStageOk = 'c'; return; }
       fitCanvasToContent();
       st.maxScroll = Math.max(0, st.totalH - chv());
       st.scrollTop = Math.min(st.scrollTop, st.maxScroll);
       const b = kp.band(el, CW, st.scrollTop, chv() + 40);
       if (!b) throw new Error('canvas band alloc fail');
+      if (STG === 'd') { st.rendering = false; document.documentElement.dataset.kpStageOk = 'd'; return; }
       st.band = b.canvas;
       document.documentElement.dataset.kpRendered = CW + 'x' + b.total;
       drawCanvas();
@@ -399,7 +404,7 @@
     if (e.key in map) {
       e.preventDefault();
       const st = state.pip;
-      st.scrollTop = Math.max(0, Math.min(st.maxScroll || 99999, st.scrollTop + map[e.key]));
+      st.scrollTop = Math.max(0, Math.min(st.maxScroll ?? 99999, st.scrollTop + map[e.key]));
       redrawBand();
     } else if (e.key === 'ArrowRight') { e.preventDefault(); switchPip(1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); switchPip(-1); }
@@ -420,6 +425,36 @@
     scheduled = true;
     setTimeout(() => { scheduled = false; buildBar(); injectButtons(); }, 150);
   };
+
+  /* dev-only image probe: what can the content world do with images? */
+  if (location.hostname === "localhost") {
+    setTimeout(() => {
+      const de = document.documentElement;
+      const t = (u, tag) => new Promise(r => {
+        const im = new Image();
+        im.onload = () => r(tag + ':ok' + im.naturalWidth);
+        im.onerror = () => r(tag + ':ERR');
+        im.src = u;
+      });
+      const row = [...document.querySelectorAll('.taskList tr')].find(r => r.textContent.includes('№ 32250'));
+      const im = row && row.querySelector('img');
+      const imsrc = im ? (im.currentSrc || im.src) : 'noimg';
+      Promise.all([
+        t(imsrc, 'realsrc'),
+        t(location.origin + '/wide.svg', 'svg'),
+        t(location.origin + '/wide.png', 'png'),
+        t('https://kompege.ru/favicon.ico', 'xorigin'),
+      ]).then(a => { de.dataset.kpProbe = a.join(' ') + ' | im:' + imsrc; });
+    }, 1200);
+  }
+
+
+  /* dev heartbeat: stops if the content main thread spins */
+  if (location.hostname === "localhost") {
+    setInterval(() => {
+      try { document.documentElement.dataset.kpBeat = String(Date.now()); } catch (e) {}
+    }, 400);
+  }
   new MutationObserver(scan).observe(document.documentElement,
     { childList: true, subtree: true });
   scan();
