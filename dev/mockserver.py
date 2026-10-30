@@ -14,6 +14,9 @@ class H(http.server.SimpleHTTPRequestHandler):
         if path == "/task" and "id=" not in full:
             # SPA landing replica: empty taskList, tasks load only after "Найти все задачи"
             self.path = "/landing/index.html"
+        elif path.startswith("/jobs/"):
+            # homework (jobs) replica: .block strip + one .task .text
+            self.path = "/hw/index.html"
         elif path.startswith("/task/") or path in ("/task", "/", "/index.html"):
             # relative asset refs from /task/<id> pages (e.g. src="wide.svg")
             # resolve to /task/wide.svg -> serve the basename from mock root

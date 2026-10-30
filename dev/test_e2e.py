@@ -386,6 +386,73 @@ step("iframe_query_url", bool(iframeSrc) and iframeSrc != "None" and "/task?id=4
 step("iframe_frame_rendered", bool(rendI) and str(rendI).startswith("880x"), rendI)
 step("iframe_stream_alive", (vaI.get("rs") or 0) >= 2 and (vaI.get("ct") or 0) > 0.3, vaI)
 
+# 16) homework (jobs) replica: ⤢ read-mode must FIX the layout there.
+#     It used to be a dead toggle: all fluid CSS was scoped under .taskList,
+#     homework pages have .task/.text only.
+wd.get(bust(f"{BASE}/jobs/c99/task11/hw7"))
+for _ in range(10):
+    time.sleep(1)
+    if int(wd.js("return document.querySelectorAll('.kp-pip-mini').length")) >= 3:
+        break
+mini = int(wd.js("return document.querySelectorAll('.kp-pip-mini').length"))
+step("hw_mini_buttons", mini >= 3, f"mini={mini}")
+hwfix = json.loads(wd.js("""
+  const de=document.documentElement;
+  de.classList.remove('kp-read');
+  const off=de.scrollWidth;
+  de.classList.add('kp-read');
+  const on=de.scrollWidth;
+  return JSON.stringify({off,on,vw:innerWidth});
+"""))
+step("hw_readmode_fixes_layout",
+     hwfix["off"] > hwfix["vw"] + 40 and hwfix["on"] <= hwfix["vw"] + 2, hwfix)
+
+# 17) HW PiP: real click on a strip mini button (block 12) renders the live task
+pH = json.loads(wd.js("""
+  const b=[...document.querySelectorAll('.kp-pip-mini')].find(b=>b.dataset.task==='12');
+  if(!b) return null;
+  b.scrollIntoView({block:'center'});
+  const r=b.getBoundingClientRect();
+  return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2});
+"""))
+wd.js("document.documentElement.dataset.kpRendered=''; document.documentElement.dataset.kpRenderErr=''")
+wd.click_xy(pH["x"], pH["y"])
+rendH = None
+for _ in range(20):
+    time.sleep(1)
+    d = wd.js("const de=document.documentElement; return de.dataset.kpRendered||de.dataset.kpRenderErr||null")
+    if d and d != "None":
+        rendH = d
+        break
+step("hw_pip_from_strip", bool(rendH) and str(rendH).startswith("880x"), rendH)
+
+# 18) wheel scrolls the PiP frame while PiP is open (Mac: no Alt needed).
+#     Switch back to task 11 first: it is taller than the frame (task 12 is not).
+wd.js("window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft',metaKey:true,bubbles:true}))")
+scrA = "0/0/0"
+for _ in range(15):
+    time.sleep(1)
+    scrA = wd.js("return document.documentElement.dataset.kpScroll||'0/0/0'")
+    if int(scrA.split("/")[2]) > 1240:
+        break
+wd.js("window.dispatchEvent(new WheelEvent('wheel',{deltaY:600,bubbles:true,cancelable:true}))")
+time.sleep(1.2)
+scrB = wd.js("return document.documentElement.dataset.kpScroll||'0/0/0'")
+ya = int(scrA.split("/")[0])
+yb = int(scrB.split("/")[0])
+step("wheel_scrolls_frame", yb - ya >= 100, f"{scrA} -> {scrB}")
+
+# 19) Cmd+ArrowRight (Mac) switches tasks — gate accepts metaKey, not only altKey.
+#     Task 11 is current after step 18, so → must land on 12.
+wd.js("window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',metaKey:true,bubbles:true}))")
+cur = None
+for _ in range(15):
+    time.sleep(1)
+    cur = wd.js("return document.querySelector('.block.task-current')?.dataset?.n||null")
+    if cur == "12":
+        break
+step("cmd_arrow_switches", cur == "12", cur)
+
 print("\nRESULT:", json.dumps(r, ensure_ascii=False, indent=1))
 ok = all(s["ok"] for s in r["steps"])
 print("ALL_OK" if ok else "SOME_FAILED")

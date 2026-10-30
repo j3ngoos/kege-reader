@@ -53,12 +53,56 @@ html.kp-read .task-text {
 }
 /* блоки с фиксированной шириной (width="1400", style="width:1300px") */
 html.kp-read .taskList [width],
-html.kp-read .taskList [style*="width"] {
+html.kp-read .taskList [style*="width"],
+html.kp-read .task [width],
+html.kp-read .task [style*="width"] {
   max-width: 100% !important;
+  box-sizing: border-box;
 }
-/* центральная колонка — не шире окна */
+/* --- центральная колонка — не шире окна --- */
 html.kp-read .center {
   min-width: 0;
+}
+
+/* --- домашка курса / станция / варианты: карточка .task (Vue SPA) ---
+   Тот же раскладкой набор, что для .taskList: без этих правил
+   переключатель ⤢ на домашках «не работает» (нет .taskList → нет effect). */
+html.kp-read .task img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+html.kp-read .task table {
+  max-width: 100%;
+}
+html.kp-read .task table table {
+  table-layout: auto;
+}
+html.kp-read .task td,
+html.kp-read .task th {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  max-width: 100%;
+}
+html.kp-read .task pre {
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+html.kp-read .task td[width],
+html.kp-read .task th[width] {
+  width: auto !important;
+  min-width: 0;
+}
+html.kp-read .task table[width] {
+  width: auto !important;
+}
+html.kp-read .task .text {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+html.kp-read .task {
+  font-size: calc(16px * var(--kp-zoom, 1));
 }
 
 /* --- экзаменационная сетка (доска номеров на старте экзамена).

@@ -72,9 +72,11 @@
     bar.innerHTML = `
       <button data-a="minus" title="Мельче">A−</button>
       <button data-a="plus" title="Крупнее">A+</button>
+      <button data-a="up" title="Кадр PiP: прокрутка вверх">▲</button>
+      <button data-a="down" title="Кадр PiP: прокрутка вниз">▼</button>
       <button data-a="read" title="Режим чтения вкл/выкл">⤢</button>
       <button data-a="pip" title="Вынести текущую задачу в плавающее окно">▶ PiP</button>
-      <span class="kp-hint">PiP: Alt+↑/↓ прокрутка, Alt+←/→ № задачи</span>
+      <span class="kp-hint">PiP: колесо/▲▼ — прокрутка · Alt(⌥)/⌘+↑↓←→</span>
       <button class="kp-close" data-a="close" title="Скрыть панель">✕</button>`;
     document.body.appendChild(bar);
     bar.addEventListener('click', (e) => {
@@ -86,6 +88,19 @@
       else if (a === 'pip') { openPipCurrent(); }
       else if (a === 'close') { bar.remove(); hideFallbackPanel(); }
     });
+    // ▲▼ зажимаются: непрерывный скролл кадра (на Mac без Alt — основной способ)
+    const scrTimer = { id: null };
+    const stopScr = () => { if (scrTimer.id) { clearInterval(scrTimer.id); scrTimer.id = null; } };
+    bar.addEventListener('pointerdown', (e) => {
+      const a = e.target?.dataset?.a;
+      if (a !== 'up' && a !== 'down') return;
+      e.preventDefault();
+      const d = a === 'up' ? -260 : 260;
+      scrollPip(d);
+      scrTimer.id = setInterval(() => scrollPip(d), 130);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) =>
+      bar.addEventListener(ev, stopScr));
     bar.addEventListener('dblclick', (e) => {
       if (e.target?.dataset?.a === 'minus') { state.zoom = 1; applyZoom(); if (state.pipTask) renderFrame(); }
     });
@@ -216,7 +231,7 @@
     ctx.fillText(state.pip && state.pip.hw ? ((state.pip.hwLabel || 'Домашка') + ' · ' + taskId) : ('№ ' + taskId), 18, 44);
     ctx.font = '16px Roboto, sans-serif';
     ctx.fillStyle = '#cfe3ff';
-    ctx.fillText('КЕГЭ · Alt+↑/↓ — прокрутка · Alt+←/→ — другой №', 18, 66);
+    ctx.fillText('КЕГЭ · колесо/▲▼ · Alt(⌥)/⌘+↑↓ — прокрутка · +←→ — №', 18, 66);
     if (info) {
       ctx.fillStyle = '#9fb8e8';
       ctx.font = '13px Roboto, sans-serif';
@@ -236,7 +251,7 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, canvas.height);
     drawHeader(ctx, st.taskId, note,
-      'v3.12 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      'v3.13 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
       st.diag);
     if (st.band) {
       ctx.save();
@@ -267,6 +282,25 @@
     }
     drawCanvas();
   }
+
+  // единая точка прокрутки кадра: колесо, ▲▼ кнопки, Alt/⌘+↑↓
+  function scrollPip(d) {
+    const st = state.pip;
+    if (!st || !state.pipTask) return;
+    st.scrollTop = Math.max(0, Math.min(st.maxScroll ?? 99999, st.scrollTop + d));
+    redrawBand();
+    if (location.hostname === 'localhost')
+      document.documentElement.dataset.kpScroll =
+        st.scrollTop + '/' + (st.maxScroll ?? -1) + '/' + (st.totalH || 0);
+  }
+
+  // колесо мыши управляет кадром, пока PiP открыт (на Mac это самый естественный скролл)
+  window.addEventListener('wheel', (e) => {
+    if (!state.pipTask || !document.pictureInPictureElement) return;
+    if (!e.deltaY) return;
+    e.preventDefault();
+    scrollPip(e.deltaMode === 1 ? e.deltaY * 32 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY);
+  }, { passive: false, capture: true });
 
   async function renderFrame() {
     const st = state.pip;
@@ -323,6 +357,9 @@
       fitCanvasToContent();
       st.maxScroll = Math.max(0, st.totalH - chv());
       st.scrollTop = Math.min(st.scrollTop, st.maxScroll);
+      if (location.hostname === 'localhost')
+        document.documentElement.dataset.kpScroll =
+          st.scrollTop + '/' + st.maxScroll + '/' + st.totalH;
       const b = kp.band(el, CW, st.scrollTop, chv() + 40);
       if (!b) throw new Error('canvas band alloc fail');
       if (STG === 'd') { st.rendering = false; document.documentElement.dataset.kpStageOk = 'd'; return; }
@@ -472,19 +509,16 @@
     await openPip(next);
   }
 
-  /* ---------- клавиатура ---------- */
+  /* ---------- клавиатура: Alt (на Mac ⌥ Option) или ⌘ ---------- */
   window.addEventListener('keydown', (e) => {
-    if (!e.altKey || !state.pipTask) return;
+    if (!(e.altKey || e.metaKey) || !state.pipTask) return;
     const map = {
       ArrowDown: 320, ArrowUp: -320,
       PageDown: 900, PageUp: -900,
     };
     if (e.key in map) {
       e.preventDefault();
-      const st = state.pip;
-      st.scrollTop = Math.max(0, Math.min(st.maxScroll ?? 99999, st.scrollTop + map[e.key]));
-      redrawBand();
-      if (location.hostname === 'localhost') document.documentElement.dataset.kpScroll = st.scrollTop + '/' + (st.maxScroll ?? -1) + '/' + (st.totalH || 0);
+      scrollPip(map[e.key]);
     } else if (e.key === 'ArrowRight') { e.preventDefault(); switchPip(1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); switchPip(-1); }
   }, true);
