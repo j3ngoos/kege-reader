@@ -198,7 +198,7 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, canvas.height);
     drawHeader(ctx, st.taskId, note,
-      'v3.5 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      'v3.7 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
       st.diag);
     if (st.band) {
       ctx.save();
@@ -259,6 +259,19 @@
       const kp = await html2canvasReady();
       if (STG === 'b') { st.rendering = false; document.documentElement.dataset.kpStageOk = 'b'; return; }
       await kp.preload(el);
+      // katex snapshots paint real laid-out math; on heavy tasks they land
+      // after the 3.5s image valve — paint waits for them (10s valve), then
+      // repaints once more so late snapshots replace their text fallbacks
+      if (kp.preload.snaps) {
+        const done = await Promise.race([
+          kp.preload.snaps.then(() => true),
+          new Promise((r) => setTimeout(() => r(false), 10000)),
+        ]);
+        if (!done && !st.snapRepaintArmed) {
+          st.snapRepaintArmed = true;
+          kp.preload.snaps.then(() => { st.rendering = false; renderFrame(); });
+        }
+      }
       st.el = el;
       st.totalH = kp.measure(el, CW);
       if (STG === 'c') { st.rendering = false; document.documentElement.dataset.kpStageOk = 'c'; return; }
@@ -406,6 +419,7 @@
       const st = state.pip;
       st.scrollTop = Math.max(0, Math.min(st.maxScroll ?? 99999, st.scrollTop + map[e.key]));
       redrawBand();
+      if (location.hostname === 'localhost') document.documentElement.dataset.kpScroll = st.scrollTop + '/' + (st.maxScroll ?? -1) + '/' + (st.totalH || 0);
     } else if (e.key === 'ArrowRight') { e.preventDefault(); switchPip(1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); switchPip(-1); }
   }, true);

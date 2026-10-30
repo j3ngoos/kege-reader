@@ -137,9 +137,20 @@ step("pip_stream_alive_after_img", a["t"] > 0.3 and a["rs"] >= 2, alive)
 
 wd.screenshot("/tmp/kp_pip.png")
 
-# 7) keyboard scroll changes frame
+# 7) keyboard scroll changes frame — switch to the scrollable long task (31024)
+for _ in range(3):
+    wd.js("window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true}))")
+    time.sleep(1.0)
+rend = None
+for _ in range(20):
+    time.sleep(1)
+    d = wd.js("const de=document.documentElement;return de.dataset.kpRendered||de.dataset.kpRenderErr||null")
+    if d and d != "None": rend = d; break
+step("switched_to_31024", rend and "880x5" in rend, str(rend))
 bands = "const cv=[...document.querySelectorAll('canvas')].find(c=>c.width===880); if(!cv) return JSON.stringify({e:'nocv'}); const ctx=cv.getContext('2d'); const b=(y)=>{const hh=Math.min(420,cv.height-y-6);if(hh<80)return -1;const d=ctx.getImageData(0,y,880,hh).data;let n=0; for(let i=0;i<d.length;i+=4){if(d[i]<200)n++}return n}; return JSON.stringify([b(90),b(520),b(800)]);"
 b1 = wd.js(bands)
+wd.js("window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',altKey:true,bubbles:true}))")
+wd.js("window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',altKey:true,bubbles:true}))")
 wd.js("window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',altKey:true,bubbles:true}))")
 time.sleep(1.5)
 b2 = wd.js(bands)
