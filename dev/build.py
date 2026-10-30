@@ -6,7 +6,7 @@ SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIST = os.path.join(SRC, "dist")
 FFEXT = os.path.join(SRC, "dev", "ffext")
 
-FILES = ["content.css", "content.js", "lib/kp-render.js"]
+FILES = ["content.css", "content.js", "bg.js", "lib/kp-render.js"]
 ZFILES = ["manifest.json"] + FILES
 
 

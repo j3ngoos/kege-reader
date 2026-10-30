@@ -297,6 +297,33 @@ for tid in TYPE_IDS:
     except Exception as e:
         step(f"type_{tid}", False, {"exc": str(e)[:120]})
 
+# 13) cross-origin image WITHOUT CORS headers: background-fetch → clean blob:
+# channel must draw it AND keep the PiP stream alive (no canvas taint).
+wd.js("document.documentElement.dataset.kpRendered=''; document.documentElement.dataset.kpRenderErr=''; document.documentElement.dataset.kpImgLog=''")
+pA = json.loads(wd.js("""
+  const b=[...document.querySelectorAll('.kp-pip-btn')].find(b=>b.closest('tr').textContent.includes('\\u2116 33000'));
+  if (!b) return null;
+  b.scrollIntoView({block:'center'});
+  const r=b.getBoundingClientRect();
+  return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2});
+"""))
+wd.click_xy(pA["x"], pA["y"])
+rendA = imglogA = None
+for _ in range(25):
+    time.sleep(1)
+    rendA = wd.js("const de=document.documentElement; return de.dataset.kpRendered||de.dataset.kpRenderErr||null")
+    imglogA = wd.js("return document.documentElement.dataset.kpImgLog||''")
+    if rendA and rendA != "None" and imglogA and ("cors" in imglogA or "bg-fetch" in imglogA or "TAINT" in imglogA or "ERR" in imglogA):
+        break
+time.sleep(0.8)
+sA = json.loads(wd.js(SAMP2))
+vidA = wd.js("const v=document.querySelector('video'); return v?JSON.stringify({ct:v.currentTime,rs:v.readyState}):null")
+va = json.loads(vidA) if vidA and vidA != "None" else {}
+clean = ("cors" in (imglogA or "")) or ("bg-fetch" in (imglogA or ""))
+step("xorigin_clean_channel_draw", clean, {"imglog": (imglogA or "")[:120]})
+step("xorigin_band_content", sA.get("n", 0) > 150, sA)
+step("xorigin_stream_alive", va.get("rs", 0) >= 2 and va.get("ct", 0) > 0.3, va)
+
 print("\nRESULT:", json.dumps(r, ensure_ascii=False, indent=1))
 ok = all(s["ok"] for s in r["steps"])
 print("ALL_OK" if ok else "SOME_FAILED")

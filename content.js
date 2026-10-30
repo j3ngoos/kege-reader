@@ -198,7 +198,7 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, canvas.height);
     drawHeader(ctx, st.taskId, note,
-      'v3.7 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      'v3.8 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
       st.diag);
     if (st.band) {
       ctx.save();
