@@ -2,3 +2,4 @@ dist/
 dev/ffext/
 dev/ffext.xpi
 __pycache__/
+dev/ffext/upload_uuid.json
