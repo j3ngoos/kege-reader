@@ -90,6 +90,24 @@
 
   /* ---------- задачи на странице ---------- */
   const rowOf = (el) => el.closest('tr');
+
+  /* ---------- homework mode: /jobs/<course>/taskNN/<hw> Vue SPA ---------- */
+  // The course homework page renders ONE task at a time (.task .text) with a
+  // number strip of .block buttons on top (active = .task-current). There are
+  // no .taskList rows, so classic findRow finds nothing: render the live
+  // .task element directly and navigate by clicking the strip.
+  const HW = location.pathname.includes('/jobs/');
+  const hwNum = (b) => (b.textContent || '').replace(/\D/g, '');
+  const hwBlocks = () => HW
+    ? [...document.querySelectorAll('.block')].filter(b => /^\d+$/.test(hwNum(b)))
+    : [];
+  const hwEl = () => HW
+    ? document.querySelector('.task .text') || document.querySelector('.task')
+    : null;
+  function hwCurrent() {
+    const act = hwBlocks().find(b => b.className.includes('task-current'));
+    return act ? hwNum(act) : null;
+  }
   function taskIdOf(row) {
     const d = row.querySelector('.details');
     const m = d && d.textContent.match(/№\s*(\d{4,6})/);
@@ -103,6 +121,19 @@
       .filter(r => r.querySelector('.task-text'));
   }
   function injectButtons() {
+    if (HW) {
+      for (const b of hwBlocks()) {
+        if (b.querySelector('.kp-pip-btn')) continue;
+        const num = hwNum(b);
+        const btn = document.createElement('button');
+        btn.className = 'kp-pip-btn kp-pip-mini';
+        btn.textContent = '⧉';
+        btn.title = 'Задание ' + num + ' в плавающем окне';
+        btn.dataset.task = num;
+        b.appendChild(btn);
+      }
+      return;
+    }
     for (const row of taskRows()) {
       const cell = row.querySelector('.number')?.parentElement;
       if (!cell || cell.querySelector('.kp-pip-btn')) continue;
@@ -175,7 +206,7 @@
     ctx.fillRect(0, 0, CW, HEAD);
     ctx.fillStyle = '#fff';
     ctx.font = '700 30px Roboto, sans-serif';
-    ctx.fillText(`№ ${taskId}`, 18, 44);
+    ctx.fillText(state.pip && state.pip.hw ? ('Домашка · ' + taskId) : ('№ ' + taskId), 18, 44);
     ctx.font = '16px Roboto, sans-serif';
     ctx.fillStyle = '#cfe3ff';
     ctx.fillText('КЕГЭ · Alt+↑/↓ — прокрутка · Alt+←/→ — другой №', 18, 66);
@@ -198,7 +229,7 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, canvas.height);
     drawHeader(ctx, st.taskId, note,
-      'v3.8 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      'v3.9 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
       st.diag);
     if (st.band) {
       ctx.save();
@@ -234,14 +265,20 @@
     const st = state.pip;
     if (!st || st.rendering) return;
     let el = null;
-    const row = findRow(st.taskId);
-    if (row) {
-      el = row.querySelector('td:nth-child(2)') || row;
-    } else if (st.iframe) {
-      let doc;
-      try { doc = st.iframe.contentDocument; } catch { doc = null; }
-      el = doc?.querySelector('.taskList');
-      if (el && !st.iframeReady) return;
+    if (st.hw) {
+      el = hwEl();
+      if (!el) return;
+      st.elHw = el;
+    } else {
+      const row = findRow(st.taskId);
+      if (row) {
+        el = row.querySelector('td:nth-child(2)') || row;
+      } else if (st.iframe) {
+        let doc;
+        try { doc = st.iframe.contentDocument; } catch { doc = null; }
+        el = doc?.querySelector('.taskList');
+        if (el && !st.iframeReady) return;
+      }
     }
     if (!el) return;
     st.rendering = true;
@@ -252,7 +289,7 @@
       try {
         const r = el.getBoundingClientRect();
         const d = csOf(el);
-        st.diag = (row ? 'row' : 'iframe') + ' ' + el.tagName +
+        st.diag = (st.hw ? 'hw' : (row ? 'row' : 'iframe')) + ' ' + el.tagName +
           ' h=' + Math.round(r.height) + ' w=' + Math.round(r.width) +
           ' d=' + d.display + ' k=' + el.children.length + ' ox=' + Math.round(r.x);
       } catch (e) { st.diag = 'diagfail:' + String(e.message || e).slice(0, 40); }
@@ -298,6 +335,10 @@
   }
 
   function sigOf(taskId) {
+    if (state.pip.hw) {
+      const el = hwEl();
+      return el ? String(el.textContent.length) : '';
+    }
     const row = findRow(taskId);
     let t = row ? row.querySelector('.task-text')?.textContent : null;
     if (t == null && state.pip.iframe) {
@@ -343,7 +384,8 @@
     st.band = null;
     st.el = null;
     st.maxScroll = 0;
-    if (!findRow(taskId)) ensureFrame(taskId);
+    st.hw = HW && !findRow(taskId) && !!hwEl();
+    if (!st.hw && !findRow(taskId)) ensureFrame(taskId);
     markActive(taskId);
     state.pipTask = taskId;
     await ensureMedia();
@@ -384,6 +426,7 @@
   }
 
   function currentTaskId() {
+    if (HW) return hwCurrent();
     const u = location.pathname.match(/\/task\/(\d+)/);
     if (u) return u[1];
     const first = taskRows()[0];
@@ -398,6 +441,19 @@
 
   async function switchPip(delta) {
     if (!state.pipTask) return;
+    if (HW) {
+      const bl = hwBlocks();
+      if (bl.length < 2) return;
+      const nums = bl.map(hwNum).map(Number);
+      const cur = parseInt(state.pipTask, 10);
+      const i = nums.indexOf(cur);
+      if (i < 0) return;
+      const j = Math.min(nums.length - 1, Math.max(0, i + delta));
+      if (j === i) return;
+      bl[j].click(); // the SPA swaps .task content; openPip's stability loop follows
+      await openPip(String(nums[j]));
+      return;
+    }
     const ids = taskRows().map(taskIdOf).filter(Boolean);
     let next;
     const i = ids.indexOf(String(state.pipTask));
