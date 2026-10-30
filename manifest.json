@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "KEGE Reader — fluid text + PiP",
   "short_name": "KegPipe",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "Компактные окна и читаемый текст на kompege.ru: таблицы по ширине окна, кнопки PiP у каждого номера задачи, вынос задачи в плавающее окно поверх всех окон, зум, автопрокрутка с клавиатуры.",
   "browser_specific_settings": {
     "gecko": {

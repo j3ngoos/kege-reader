@@ -96,7 +96,11 @@
   // number strip of .block buttons on top (active = .task-current). There are
   // no .taskList rows, so classic findRow finds nothing: render the live
   // .task element directly and navigate by clicking the strip.
-  const HW = location.pathname.includes('/jobs/');
+  // HW-подобные страницы: домашка курса (/jobs/...) и станция/варианты
+  // (/homework, /variant) — после переезда kompege на Vue SPA это один DOM:
+  // полоса .block номеров + одна задача .task .text.
+  const HW = /^\/(jobs\/|homework|variant)/.test(location.pathname);
+  const HW_LABEL = location.pathname.startsWith('/jobs') ? 'Домашка' : 'Вариант';
   const hwNum = (b) => (b.textContent || '').replace(/\D/g, '');
   const hwBlocks = () => HW
     ? [...document.querySelectorAll('.block')].filter(b => /^\d+$/.test(hwNum(b)))
@@ -206,7 +210,7 @@
     ctx.fillRect(0, 0, CW, HEAD);
     ctx.fillStyle = '#fff';
     ctx.font = '700 30px Roboto, sans-serif';
-    ctx.fillText(state.pip && state.pip.hw ? ('Домашка · ' + taskId) : ('№ ' + taskId), 18, 44);
+    ctx.fillText(state.pip && state.pip.hw ? ((state.pip.hwLabel || 'Домашка') + ' · ' + taskId) : ('№ ' + taskId), 18, 44);
     ctx.font = '16px Roboto, sans-serif';
     ctx.fillStyle = '#cfe3ff';
     ctx.fillText('КЕГЭ · Alt+↑/↓ — прокрутка · Alt+←/→ — другой №', 18, 66);
@@ -229,7 +233,7 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, canvas.height);
     drawHeader(ctx, st.taskId, note,
-      'v3.9 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      'v3.11 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
       st.diag);
     if (st.band) {
       ctx.save();
@@ -385,6 +389,7 @@
     st.el = null;
     st.maxScroll = 0;
     st.hw = HW && !findRow(taskId) && !!hwEl();
+    st.hwLabel = HW_LABEL;
     if (!st.hw && !findRow(taskId)) ensureFrame(taskId);
     markActive(taskId);
     state.pipTask = taskId;

@@ -1,7 +1,13 @@
 {
-  "name": "KEGE Reader — fluid text + PiP for kompege.ru",
-  "summary": "Fluid readable layout and a picture-in-picture window for kompege.ru tasks and course homework.",
-  "description": "KEGE Reader improves reading of kompege.ru tasks (ЕГЭ practice site).\n\nFeatures:\n- Fluid layout of task text: the task is re-typeset into a readable column of any width (works in split-screen windows), with proper math (KaTeX), tables, and code.\n- Picture-in-picture (PiP) window: the task renders into a real video stream, so the window floats above all windows, including fullscreen video. Move the PiP bar by dragging; zoom, copy, download.\n- Works on the classic task pages (/task/NNNNN) and on the course homework pages (/jobs/...) — mini PiP buttons appear on the task number strip; Alt+Left/Right switches tasks inside the PiP.\n- Task images (including CDN-hosted) are drawn into the PiP canvas via CORS or a background fetch relay, keeping the stream untainted.\n\nAll processing is local; see the privacy policy and the public source repository.\n\n---\n\nРасширение улучшает чтение задач на kompege.ru: переносит текст задачи в «резиновую» колонку любой ширины, рисует задачи в PiP-окне поверх всех окон (включая полноэкранное видео), поддерживает страницы домашки курса и картинки с CDN. Вся обработка локальная, исходники открыты.",
+  "name": {
+    "en-US": "KEGE Reader — fluid text + PiP for kompege.ru"
+  },
+  "summary": {
+    "en-US": "Fluid readable layout and a picture-in-picture window for kompege.ru tasks, exam station and course homework."
+  },
+  "description": {
+    "en-US": "KEGE Reader improves reading of kompege.ru tasks (ЕГЭ practice site).\n\nFeatures:\n- Fluid layout of task text: the task is re-typeset into a readable column of any width (works in split-screen windows), with proper math (KaTeX), tables, and code.\n- Picture-in-picture (PiP) window: the task renders into a real video stream, so the window floats above all windows, including fullscreen video. Drag the bar, zoom, copy, download.\n- Works on task pages, on the exam station (homework/variants) and on the course homework pages (/jobs/...): mini PiP buttons on the task number strip; Alt+Left/Right switches tasks inside the PiP.\n- Task images (including CDN-hosted) are drawn into the PiP canvas via CORS or a background fetch relay, keeping the stream untainted.\n\nAll processing is local; see the privacy policy and the public source repository.\n\n---\n\nРасширение улучшает чтение задач на kompege.ru: переносит текст задачи в «резиновую» колонку любой ширины, рисует задачи в PiP-окне поверх всех окон (включая полноэкранное видео), поддерживает станцию, варианты и домашку курса, картинки с CDN. Вся обработка локальная, исходники открыты."
+  },
   "categories": {
     "firefox": [
       "education",
@@ -9,15 +15,24 @@
     ]
   },
   "privilege": false,
-  "privacy_policy": "https://j3ngoos.github.io/kege-reader/privacy",
-  "homepage_url": "https://github.com/j3ngoos/kege-reader",
+  "privacy_policy": {
+    "en-US": "https://j3ngoos.github.io/kege-reader/privacy"
+  },
+  "homepage_url": {
+    "en-US": "https://github.com/j3ngoos/kege-reader"
+  },
   "version": {
+    "custom_license": {
+      "name": {
+        "en-US": "MIT License"
+      },
+      "text": {
+        "en-US": "1|MIT License\n2|\n3|Copyright (c) 2026 Iaroslav Makukha\n4|\n5|Permission is hereby granted, free of charge, to any person obtaining a copy\n6|of this software and associated documentation files (the \"Software\"), to deal\n7|in the Software without restriction, including without limitation the rights\n8|to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n9|copies of the Software, and to permit persons to whom the Software is\n10|furnished to do so, subject to the following conditions:\n11|\n12|The above copyright notice and this permission notice shall be included in all\n13|copies or substantial portions of the Software.\n14|\n15|THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n16|IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n17|FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n18|AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n19|LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n20|OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n21|SOFTWARE."
+      }
+    },
     "source_code_repo": "https://github.com/j3ngoos/kege-reader",
     "release_notes": {
-      "en-US": "First AMO release: fluid layout, PiP window, homework (/jobs) mini-PiP, cross-origin CDN images via CORS/background-fetch relay, E2E 37/37."
-    },
-    "custom_license": {
-      "en-US": "1|MIT License\n2|\n3|Copyright (c) 2026 Iaroslav Makukha\n4|\n5|Permission is hereby granted, free of charge, to any person obtaining a copy\n6|of this software and associated documentation files (the \"Software\"), to deal\n7|in the Software without restriction, including without limitation the rights\n8|to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n9|copies of the Software, and to permit persons to whom the Software is\n10|furnished to do so, subject to the following conditions:\n11|\n12|The above copyright notice and this permission notice shall be included in all\n13|copies or substantial portions of the Software.\n14|\n15|THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n16|IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n17|FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n18|AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n19|LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n20|OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n21|SOFTWARE."
+      "en-US": "First AMO release: fluid layout, PiP window, station/variant and homework (/jobs) mini-PiP, cross-origin CDN images via CORS/background-fetch relay."
     }
   }
 }
