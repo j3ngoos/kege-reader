@@ -6,7 +6,7 @@
   "description": "Компактные окна и читаемый текст на kompege.ru: таблицы по ширине окна, кнопки PiP у каждого номера задачи, вынос задачи в плавающее окно поверх всех окон, зум, автопрокрутка с клавиатуры.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "kege-reader@hermes.local",
+      "id": "kege-reader@j3ngoos.github.io",
       "strict_min_version": "126.0",
       "update_url": "https://j3ngoos.github.io/kege-reader/kege-reader-updates.json",
       "data_collection_permissions": {
