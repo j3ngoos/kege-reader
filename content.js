@@ -119,6 +119,13 @@
 
   /* ---------- PiP движок ---------- */
   const CW = 880, CH = 1240, HEAD = 76, FW = 860;
+  // visible band height adapts to the task: short tasks shrink the PiP window
+  const chv = () => (canvas ? canvas.height - HEAD : CH - HEAD);
+  function fitCanvasToContent() {
+    if (!canvas || !state.pip) return;
+    const want = Math.max(HEAD + 240, Math.min(CH, HEAD + 8 + (state.pip.totalH || CH)));
+    if (Math.abs(canvas.height - want) > 8) canvas.height = want; // stream follows size
+  }
   let canvas, video, pipWin;
 
   function ensureMedia() {
@@ -189,13 +196,13 @@
     if (!canvas || !st) return;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, CW, CH);
+    ctx.fillRect(0, 0, CW, canvas.height);
     drawHeader(ctx, st.taskId, note,
-      'v3.3 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      'v3.4 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
       st.diag);
     if (st.band) {
       ctx.save();
-      ctx.beginPath(); ctx.rect(0, HEAD, CW, CH - HEAD); ctx.clip();
+      ctx.beginPath(); ctx.rect(0, HEAD, CW, chv()); ctx.clip();
       ctx.drawImage(st.band, 0, HEAD);
       ctx.restore();
     }
@@ -215,7 +222,7 @@
     const st = state.pip;
     if (!st.el || !window.KP) { drawCanvas(); return; }
     try {
-      const b = window.KP.band(st.el, CW, st.scrollTop, CH - HEAD + 40);
+      const b = window.KP.band(st.el, CW, st.scrollTop, chv() + 40);
       if (b) st.band = b.canvas;
     } catch (e) {
       document.documentElement.dataset.kpRenderErr = String(e && e.message || e).slice(0, 200);
@@ -251,9 +258,10 @@
       await kp.preload(el);
       st.el = el;
       st.totalH = kp.measure(el, CW);
-      st.maxScroll = Math.max(0, st.totalH - (CH - HEAD));
+      fitCanvasToContent();
+      st.maxScroll = Math.max(0, st.totalH - chv());
       st.scrollTop = Math.min(st.scrollTop, st.maxScroll);
-      const b = kp.band(el, CW, st.scrollTop, CH - HEAD + 40);
+      const b = kp.band(el, CW, st.scrollTop, chv() + 40);
       if (!b) throw new Error('canvas band alloc fail');
       st.band = b.canvas;
       document.documentElement.dataset.kpRendered = CW + 'x' + b.total;

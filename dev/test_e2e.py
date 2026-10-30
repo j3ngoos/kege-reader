@@ -6,6 +6,11 @@ from wd import WD
 
 BASE = "http://localhost:8899"
 
+import time as _t
+def bust(u):
+    return u + ("&" if "?" in u else "?") + "nc=" + str(int(_t.time() * 1000))
+
+
 wd = WD()
 wd.new_session()
 wd.timeouts("script", 30000)
@@ -32,7 +37,7 @@ except Exception as e:
     sys.exit(1)
 
 # 2) open mock task page
-wd.get(f"{BASE}/task/31112")
+wd.get(bust(f"{BASE}/task/31112"))
 time.sleep(2.5)
 step("page_open", "31112" in (wd.current_url() or ""), wd.current_url())
 
@@ -133,7 +138,7 @@ step("pip_stream_alive_after_img", a["t"] > 0.3 and a["rs"] >= 2, alive)
 wd.screenshot("/tmp/kp_pip.png")
 
 # 7) keyboard scroll changes frame
-bands = "const cv=[...document.querySelectorAll('canvas')].find(c=>c.width===880); if(!cv) return JSON.stringify({e:'nocv'}); const ctx=cv.getContext('2d'); const b=(y)=>{const d=ctx.getImageData(0,y,880,420).data;let n=0; for(let i=0;i<d.length;i+=4){if(d[i]<200)n++}return n}; return JSON.stringify([b(90),b(520),b(800)]);"
+bands = "const cv=[...document.querySelectorAll('canvas')].find(c=>c.width===880); if(!cv) return JSON.stringify({e:'nocv'}); const ctx=cv.getContext('2d'); const b=(y)=>{const hh=Math.min(420,cv.height-y-6);if(hh<80)return -1;const d=ctx.getImageData(0,y,880,hh).data;let n=0; for(let i=0;i<d.length;i+=4){if(d[i]<200)n++}return n}; return JSON.stringify([b(90),b(520),b(800)]);"
 b1 = wd.js(bands)
 wd.js("window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',altKey:true,bubbles:true}))")
 time.sleep(1.5)
@@ -155,7 +160,7 @@ wd.screenshot("/tmp/kp_switch.png")
 
 # 9) zoom: reset persisted state, reopen, press A+
 wd.js("localStorage.removeItem('kp_zoom'); localStorage.removeItem('kp_read')")
-wd.get(BASE + "/task/31112")
+wd.get(bust(BASE + "/task/31112"))
 time.sleep(1.5)
 p9 = json.loads(wd.js("""
   const b=document.querySelector('.kp-pip-btn');
@@ -225,7 +230,7 @@ step("xlong_end_visible", bands_x[1] > 800, bands_x)
 wd.screenshot("/tmp/kp_xlong.png")
 
 # 13) iframe path: task not listed on the page -> iframe frame + cross-doc getComputedStyle
-wd.get(f"{BASE}/task/99999")
+wd.get(bust(f"{BASE}/task/99999"))
 time.sleep(2)
 wd.js("document.documentElement.dataset.kpRendered=''; document.documentElement.dataset.kpRenderErr=''")
 p = wd.js("""
@@ -243,6 +248,43 @@ for _ in range(35):
         break
     time.sleep(1)
 step("iframe_path_render_ok", rend and "x" in rend, rend)
+
+# 12) every task type: render + band-sample + screenshot for vision review
+TYPE_IDS = ["3290", "32100", "32120", "32130", "32140", "32190",
+            "32230", "32240", "32270", "32250", "325110"]
+wd.get(bust(BASE + "/task/31112"))
+time.sleep(1.5)
+import base64
+SAMP2 = ("const cv=[...document.querySelectorAll('canvas')].find(c=>c.width===880); if(!cv) return JSON.stringify({e:'nocv'});"
+         "const y=90;const hh=Math.min(420,cv.height-y-6);if(hh<80)return JSON.stringify({e:'short'});"
+         "try{const d=cv.getContext('2d').getImageData(0,y,880,hh).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]<200)n++;return JSON.stringify({n:n,h:cv.height})}"
+         "catch(e){return JSON.stringify({e:String(e.message).slice(0,60)})}")
+for tid in TYPE_IDS:
+    try:
+        wd.js("document.documentElement.dataset.kpRendered=''; document.documentElement.dataset.kpRenderErr=''")
+        p9 = json.loads(wd.js("""
+          const b=[...document.querySelectorAll('.kp-pip-btn')].find(b=>b.closest('tr').textContent.includes('\u2116 ' + '%s'));
+          if (!b) return null;
+          b.scrollIntoView({block:'center'});
+          const r=b.getBoundingClientRect();
+          return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2});
+        """ % tid))
+        wd.click_xy(p9["x"], p9["y"])
+        rend2 = None
+        for _ in range(20):
+            time.sleep(1)
+            d2 = wd.js("const de=document.documentElement; return de.dataset.kpRendered||de.dataset.kpRenderErr||null")
+            if d2 and d2 != "None":
+                rend2 = d2
+                break
+        time.sleep(0.8)
+        s2 = json.loads(wd.js(SAMP2))
+        data = wd.js("const cv=[...document.querySelectorAll('canvas')].find(c=>c.width===880); return cv?cv.toDataURL('image/png'):null")
+        if data and data != "None":
+            open(f"/tmp/kp_type_{tid}.png", "wb").write(base64.b64decode(data.split(",", 1)[1]))
+        step(f"type_{tid}", rend2 and "x" in rend2 and s2.get("n", 0) > 150, {"rend": rend2, "band": s2})
+    except Exception as e:
+        step(f"type_{tid}", False, {"exc": str(e)[:120]})
 
 print("\nRESULT:", json.dumps(r, ensure_ascii=False, indent=1))
 ok = all(s["ok"] for s in r["steps"])
