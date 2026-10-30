@@ -16,8 +16,8 @@ set -a; . ~/.hermes/secrets/amo.env; set +a
   --channel unlisted \
   --api-key "$WEBEXT_API_JWT_ISSUER" \
   --api-secret "$WEBEXT_API_JWT_SECRET" \
-  --approval-timeout 1200 \
+  --approval-timeout 5400 \
   || true
-SIGNED=$(ls -t /tmp/amo-out/kege-reader-*.xpi 2>/dev/null | grep -v source | head -1 || true)
+SIGNED=$(ls -t /tmp/amo-out/*.xpi 2>/dev/null | grep -v source | head -1 || true)
 echo "version=$V signed=$SIGNED"
 echo "next: cp \$SIGNED docs/kege-reader.xpi; bump docs/kege-reader-updates.json; git push"

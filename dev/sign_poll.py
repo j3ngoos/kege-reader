@@ -10,7 +10,7 @@ API = "https://addons.mozilla.org/api/v5"
 
 
 def b64(d):
-    return base64.urlsafe_b64(d).rstrip(b"=").decode()
+    return base64.urlsafe_b64encode(d).rstrip(b"=").decode()
 
 
 def jwt():
