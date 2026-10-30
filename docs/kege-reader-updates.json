@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "kege-reader@hermes.local": {
+      "updates": [
+        {
+          "version": "0.3.13",
+          "update_link": "https://j3ngoos.github.io/kege-reader/kege-reader.xpi"
+        }
+      ]
+    }
+  }
+}
