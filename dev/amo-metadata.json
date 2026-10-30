@@ -10,8 +10,7 @@
   },
   "categories": {
     "firefox": [
-      "education",
-      "other"
+      "education"
     ]
   },
   "privilege": false,
