@@ -244,5 +244,14 @@ function kprender() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kprender);
 else kprender();
 </script>
+<script>
+// click logger: the harness asserts the extension NEVER auto-fires the type
+// search on ?id= pages — a fired click leaves a visible mark here
+[...document.querySelectorAll('.select-panel input[type=button]')]
+  .filter(b => b.value.includes('Найти все'))
+  .forEach(b => b.addEventListener('click', () => {
+    document.documentElement.dataset.kpFindClicked = String(Date.now());
+  }));
+</script>
 </body>
 </html>

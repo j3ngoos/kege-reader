@@ -1,0 +1,10 @@
+[
+ {"taskId": 31498, "number": 13, "level": "Базовый",
+  "text": "<p>Демоверсия 2027: короткий текст, чтобы проверить, что на автозагруженном лендинге появляется кнопка PiP у каждого номера.</p>"},
+ {"taskId": 31113, "number": 13, "level": "высокий",
+  "text": "<p>Вторая задача списка: короткий текст для проверки кнопок и переключения Alt+стрелки.</p>"},
+ {"taskId": 31121, "number": 13, "level": "базовый",
+  "text": "<p>Найдите количество нулей в пятеричной записи <span class=\"katex\"><span class=\"mord\">5</span><span class=\"msupsub\"><span class=\"vlist\"><span class=\"mord mathnormal\">150</span></span></span></span> — статичный KaTeX-спан без рендера, как на живом SPA до renderMathInElement.</p>"},
+ {"taskId": 32250, "number": 13, "level": "высокий",
+  "text": "<p>Табличная задача для лендинг-теста.</p><table border=\"1\" cellpadding=\"4\"><tr><th>N</th><th>F</th></tr><tr><td>1</td><td>10</td></tr><tr><td>2</td><td>20</td></tr></table><p>Хвост текста после таблицы.</p>"}
+]

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>КЕГЭ mock — SPA landing replica</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/vendor/katex.min.css">
+</head>
+<body>
+<!-- Replica of the Vue TaskPage LANDING: select-panel + EMPTY table (tasks:[]).
+     Tasks arrive only after "Найти все задачи" — like /task/number/N on the live SPA. -->
+<div class="taskList">
+  <div class="select-panel">
+    <div><p class="header">Поиск по номеру</p><p><input type="text" placeholder="Номер задачи"><input type="button" value="Показать задачу"></p></div>
+    <div><p class="header">Поиск по типу</p><p><select><option value="13">13. Динамическое программирование</option></select><input type="button" value="Найти все задачи"></p>
+    <p><span> Сортировка: </span><select><option>Сначала новые</option></select></p></div>
+  </div>
+  <table>
+    <tbody>
+      <tr style="height:30px"><td class="center"></td><td class="center"></td></tr>
+    </tbody>
+  </table>
+</div>
+<script>
+(async function () {
+  const btn = [...document.querySelectorAll('.select-panel input[type=button]')]
+    .find(b => b.value.includes('Найти все'));
+  btn.addEventListener('click', async () => {
+    const r = await fetch('/task/number/13.json');
+    const tasks = await r.json();
+    const tb = document.querySelector('.taskList tbody');
+    for (const t of tasks) {
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="center" style="vertical-align:top"><div class="number">' + t.number + '</div></td>' +
+        '<td style="padding-bottom:20px">' +
+        '<p><span class="details">№ ' + t.taskId + ' </span><span>(Уровень: ' + t.level + ')</span></p>' +
+        '<div class="task-text" style="text-align:justify;padding-right:20px">' + t.text + '</div>' +
+        '<span class="link">Показать ответ</span></td>';
+      tb.appendChild(tr);
+    }
+    document.documentElement.dataset.kpLoadedList = String(tasks.length);
+  });
+})();
+</script>
+</body>
+</html>

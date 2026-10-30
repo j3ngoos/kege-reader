@@ -9,8 +9,12 @@ class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=ROOT, **kw)
     def do_GET(self):
-        path = self.path.split("?")[0]
-        if path.startswith("/task/") or path in ("/", "/index.html"):
+        full = self.path
+        path = full.split("?")[0]
+        if path == "/task" and "id=" not in full:
+            # SPA landing replica: empty taskList, tasks load only after "Найти все задачи"
+            self.path = "/landing/index.html"
+        elif path.startswith("/task/") or path in ("/task", "/", "/index.html"):
             # relative asset refs from /task/<id> pages (e.g. src="wide.svg")
             # resolve to /task/wide.svg -> serve the basename from mock root
             base = os.path.basename(path)

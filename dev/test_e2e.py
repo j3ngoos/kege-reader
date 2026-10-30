@@ -324,6 +324,68 @@ step("xorigin_clean_channel_draw", clean, {"imglog": (imglogA or "")[:120]})
 step("xorigin_band_content", sA.get("n", 0) > 150, sA)
 step("xorigin_stream_alive", va.get("rs", 0) >= 2 and va.get("ct", 0) > 0.3, va)
 
+# 14) SPA landing replica (tasks:[] on open): the extension must auto-fire
+#     "Найти все задачи" so the list + PiP buttons appear, like the old SSR page.
+wd.get(bust(f"{BASE}/task"))
+land = {"rows": 0, "btns": 0}
+for _ in range(15):
+    time.sleep(1)
+    land = json.loads(wd.js("""
+      const rows=[...document.querySelectorAll('.taskList tr')]
+        .filter(r=>r.querySelector('.number')&&r.querySelector('.task-text'));
+      return JSON.stringify({loaded:document.documentElement.dataset.kpLoadedList||null,
+        rows:rows.length, btns:document.querySelectorAll('.kp-pip-btn').length});
+    """))
+    if land["rows"] and land["btns"] >= land["rows"]:
+        break
+step("landing_autoload", land["rows"] >= 4 and land["btns"] >= land["rows"], land)
+
+# 14b) ?id= pages: the user searched by id — never auto-click the type search
+wd.get(bust(f"{BASE}/task?id=7"))
+time.sleep(3.5)
+landQ = json.loads(wd.js("""
+  return JSON.stringify({rows:document.querySelectorAll('.taskList .number').length,
+    clicked:document.documentElement.dataset.kpFindClicked||null,
+    loaded:document.documentElement.dataset.kpLoadedList||null});
+"""))
+step("landing_id_query_no_autoload", not landQ["clicked"] and not landQ["loaded"], landQ)
+
+# 15) iframe fallback: task NOT in the DOM must load via /task?id=N&kpip=1
+#     (the SPA router killed /task/<id>: it redirects '/' — the old frame URL died)
+wd.get(bust(f"{BASE}/task"))
+for _ in range(15):
+    time.sleep(1)
+    if int(wd.js("return document.querySelectorAll('.kp-pip-btn').length")) >= 4:
+        break
+wd.js("""
+  const td=document.querySelector('.taskList tbody tr:last-child td:nth-child(2)');
+  const b=document.createElement('button');
+  b.className='kp-pip-btn'; b.textContent='PiP400001'; b.dataset.task='400001';
+  b.title='iframe fallback probe';
+  (td||document.body).appendChild(b);
+""")
+time.sleep(1.5)
+pI = json.loads(wd.js("""
+  const b=[...document.querySelectorAll('.kp-pip-btn')].find(b=>b.dataset.task==='400001');
+  if(!b) return null;
+  b.scrollIntoView({block:'center'});
+  const r=b.getBoundingClientRect();
+  return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2});
+"""))
+wd.click_xy(pI["x"], pI["y"])
+iframeSrc = rendI = None
+for _ in range(25):
+    time.sleep(1)
+    iframeSrc = wd.js("const f=document.querySelector('iframe[src*=\"kpip\"]'); return f?f.src:null")
+    rendI = wd.js("const de=document.documentElement; return de.dataset.kpRendered||de.dataset.kpRenderErr||null")
+    if iframeSrc and iframeSrc != "None" and rendI and rendI != "None":
+        break
+vaRaw = wd.js("const v=document.querySelector('video'); return v?JSON.stringify({ct:v.currentTime,rs:v.readyState}):null")
+vaI = json.loads(vaRaw) if vaRaw and vaRaw != "None" else {}
+step("iframe_query_url", bool(iframeSrc) and iframeSrc != "None" and "/task?id=400001&kpip=1" in iframeSrc, iframeSrc)
+step("iframe_frame_rendered", bool(rendI) and str(rendI).startswith("880x"), rendI)
+step("iframe_stream_alive", (vaI.get("rs") or 0) >= 2 and (vaI.get("ct") or 0) > 0.3, vaI)
+
 print("\nRESULT:", json.dumps(r, ensure_ascii=False, indent=1))
 ok = all(s["ok"] for s in r["steps"])
 print("ALL_OK" if ok else "SOME_FAILED")

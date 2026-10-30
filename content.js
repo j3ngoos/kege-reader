@@ -17,10 +17,13 @@
     document.documentElement.classList.add('kp-frame');
     const notifyReady = () => {
       const el = document.querySelector('.taskList');
+      // SPA router has NO /task/<id> route (catch-all redirects to '/'):
+      // the frame id now rides the ?id= query the SPA's TaskPage reads
       const m = location.pathname.match(/\/task\/(\d+)/);
+      const tid = (m && m[1]) || new URLSearchParams(location.search).get('id') || '';
       try {
-        document.title = 'KPR:' + (m ? m[1] : '?');
-        window.parent.postMessage({ kp: 'ready', task: m ? m[1] : '' }, location.origin);
+        document.title = 'KPR:' + (tid || '?');
+        window.parent.postMessage({ kp: 'ready', task: tid }, location.origin);
       } catch (e) { document.title = 'KPF:' + e.message; }
       if (!el) setTimeout(notifyReady, 300);
     };
@@ -114,7 +117,7 @@
   }
   function taskIdOf(row) {
     const d = row.querySelector('.details');
-    const m = d && d.textContent.match(/№\s*(\d{4,6})/);
+    const m = d && d.textContent.match(/№\s*(\d{2,8})/);
     if (m) return m[1];
     const u = location.pathname.match(/\/task\/(\d+)/);
     return u ? u[1] : null;
@@ -191,7 +194,7 @@
 
   function ensureFrame(taskId) {
     const cur = state.pip?.iframe;
-    const url = `${location.origin}/task/${taskId}?kpip=1`;
+    const url = `${location.origin}/task?id=${taskId}&kpip=1`;
     if (cur) {
       state.pip.iframeReady = false;
       cur.src = url;
@@ -233,7 +236,7 @@
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, CW, canvas.height);
     drawHeader(ctx, st.taskId, note,
-      'v3.11 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
+      'v3.12 H=' + (st.totalH || 0) + ' y=' + (st.scrollTop || 0) + (st.band ? '' : ' noband'),
       st.diag);
     if (st.band) {
       ctx.save();
@@ -280,7 +283,8 @@
       } else if (st.iframe) {
         let doc;
         try { doc = st.iframe.contentDocument; } catch { doc = null; }
-        el = doc?.querySelector('.taskList');
+        // SPA taskList is a div that ALSO contains the search panel — paint only the table
+        el = doc?.querySelector('.taskList table') || doc?.querySelector('.taskList');
         if (el && !st.iframeReady) return;
       }
     }
@@ -495,10 +499,24 @@
 
   /* ---------- живой DOM (Vue SPA) ---------- */
   let scheduled = false;
+  // SPA /task landing starts with tasks:[] (empty table): the old server page
+  // showed the default list immediately. Fire the site's own "Найти все задачи"
+  // once so the list + PiP buttons appear without a manual click.
+  let kpAutoSearch = false;
+  function autoLoadList() {
+    if (HW || kpAutoSearch) return;
+    if (location.pathname !== '/task') return;
+    if (new URLSearchParams(location.search).has('id')) return; // user searched by id
+    if (taskRows().length) { kpAutoSearch = true; return; }
+    if (!document.querySelector('.taskList table tbody')) return;
+    const b = [...document.querySelectorAll('.select-panel input[type="button"]')]
+      .find(b => /Найти все/.test(b.value));
+    if (b) { kpAutoSearch = true; b.click(); }
+  }
   const scan = () => {
     if (scheduled) return;
     scheduled = true;
-    setTimeout(() => { scheduled = false; buildBar(); injectButtons(); }, 150);
+    setTimeout(() => { scheduled = false; autoLoadList(); buildBar(); injectButtons(); }, 150);
   };
 
   /* dev-only image probe: what can the content world do with images? */
