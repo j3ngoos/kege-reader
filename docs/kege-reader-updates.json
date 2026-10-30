@@ -3,8 +3,10 @@
     "kege-reader@j3ngoos.github.io": {
       "updates": [
         {
-          "version": "0.3.14",
-          "update_link": "https://j3ngoos.github.io/kege-reader/kege-reader.xpi"
+          "version": "0.3.15",
+          "files": {
+            "amd64": "https://j3ngoos.github.io/kege-reader/kege-reader.xpi"
+          }
         }
       ]
     }
